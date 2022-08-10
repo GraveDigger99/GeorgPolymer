@@ -1918,15 +1918,17 @@
         if ("auto" === params.slidesPerView && !params.loopedSlides) params.loopedSlides = slides.length;
         swiper.loopedSlides = Math.ceil(parseFloat(params.loopedSlides || params.slidesPerView, 10));
         swiper.loopedSlides += params.loopAdditionalSlides;
-        if (swiper.loopedSlides > slides.length) swiper.loopedSlides = slides.length;
+        if (swiper.loopedSlides > slides.length && swiper.params.loopedSlidesLimit) swiper.loopedSlides = slides.length;
         const prependSlides = [];
         const appendSlides = [];
         slides.each(((el, index) => {
-            const slide = dom(el);
-            if (index < swiper.loopedSlides) appendSlides.push(el);
-            if (index < slides.length && index >= slides.length - swiper.loopedSlides) prependSlides.push(el);
-            slide.attr("data-swiper-slide-index", index);
+            dom(el).attr("data-swiper-slide-index", index);
         }));
+        for (let i = 0; i < swiper.loopedSlides; i += 1) {
+            const index = i - Math.floor(i / slides.length) * slides.length;
+            appendSlides.push(slides.eq(index)[0]);
+            prependSlides.unshift(slides.eq(slides.length - index - 1)[0]);
+        }
         for (let i = 0; i < appendSlides.length; i += 1) $selector.append(dom(appendSlides[i].cloneNode(true)).addClass(params.slideDuplicateClass));
         for (let i = prependSlides.length - 1; i >= 0; i -= 1) $selector.prepend(dom(prependSlides[i].cloneNode(true)).addClass(params.slideDuplicateClass));
     }
@@ -2603,6 +2605,7 @@
         loop: false,
         loopAdditionalSlides: 0,
         loopedSlides: null,
+        loopedSlidesLimit: true,
         loopFillGroupWithBlank: false,
         loopPreventsSlide: true,
         rewind: false,
@@ -2914,6 +2917,20 @@
             if (needUpdate) swiper.update();
             return swiper;
         }
+        changeLanguageDirection(direction) {
+            const swiper = this;
+            if (swiper.rtl && "rtl" === direction || !swiper.rtl && "ltr" === direction) return;
+            swiper.rtl = "rtl" === direction;
+            swiper.rtlTranslate = "horizontal" === swiper.params.direction && swiper.rtl;
+            if (swiper.rtl) {
+                swiper.$el.addClass(`${swiper.params.containerModifierClass}rtl`);
+                swiper.el.dir = "rtl";
+            } else {
+                swiper.$el.removeClass(`${swiper.params.containerModifierClass}rtl`);
+                swiper.el.dir = "ltr";
+            }
+            swiper.update();
+        }
         mount(el) {
             const swiper = this;
             if (swiper.mounted) return true;
@@ -3093,11 +3110,13 @@
             e.preventDefault();
             if (swiper.isBeginning && !swiper.params.loop && !swiper.params.rewind) return;
             swiper.slidePrev();
+            emit("navigationPrev");
         }
         function onNextClick(e) {
             e.preventDefault();
             if (swiper.isEnd && !swiper.params.loop && !swiper.params.rewind) return;
             swiper.slideNext();
+            emit("navigationNext");
         }
         function init() {
             const params = swiper.params.navigation;

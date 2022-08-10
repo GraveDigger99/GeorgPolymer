@@ -1521,10 +1521,6 @@ textarea.input {
   }
 }
 
-.form-callback__button {
-  text-align: center;
-}
-
 .form-callback__name {
   display: -webkit-box;
   display: -ms-flexbox;
@@ -2251,6 +2247,10 @@ textarea.input {
     -webkit-box-flex: 1;
         -ms-flex: 1 1 100%;
             flex: 1 1 100%;
+  }
+
+  .form-callback__button {
+    text-align: center;
   }
 }
 
