@@ -727,7 +727,6 @@ textarea.input {
   -webkit-box-direction: normal;
       -ms-flex-direction: column;
           flex-direction: column;
-  padding-left: 30px;
 }
 
 .slide-main-slider__inner {
@@ -1842,6 +1841,10 @@ textarea.input {
 
   .slide-main-slider__body {
     width: 60%;
+  }
+
+  .slide-main-slider__body {
+    padding-left: 30px;
   }
 }
 
